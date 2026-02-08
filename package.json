@@ -1,0 +1,35 @@
+{
+  "name": "examplesass",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@10.29.1",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "audit:prod": "pnpm audit --prod",
+    "db:push": "drizzle-kit push",
+    "db:generate": "drizzle-kit generate"
+  },
+  "dependencies": {
+    "@clerk/nextjs": "^6.37.3",
+    "@neondatabase/serverless": "^0.10.4",
+    "drizzle-orm": "^0.38.3",
+    "next": "15.5.12",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "stripe": "^17.6.0",
+    "zod": "3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "22.13.10",
+    "@types/react": "19.2.13",
+    "@types/react-dom": "19.2.3",
+    "drizzle-kit": "^0.31.8",
+    "eslint": "9.21.0",
+    "eslint-config-next": "15.5.12",
+    "typescript": "5.7.3"
+  }
+}

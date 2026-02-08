@@ -1,0 +1,89 @@
+:root {
+  --bg: #f8f7f4;
+  --card: #ffffff;
+  --text: #1e1b18;
+  --muted: #4c4440;
+  --accent: #0d9488;
+  --accent-dark: #0f766e;
+  --border: #d8d1ca;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Avenir Next", "IBM Plex Sans", "Segoe UI", sans-serif;
+  background:
+    radial-gradient(circle at 10% 0%, #ecfeff, transparent 22%),
+    radial-gradient(circle at 90% 20%, #fef3c7, transparent 28%),
+    var(--bg);
+  color: var(--text);
+}
+
+main {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 2rem 1rem 4rem;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  text-decoration: none;
+  background: var(--accent);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cta:hover {
+  background: var(--accent-dark);
+}
+
+.grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.landing {
+  display: grid;
+  gap: 1rem;
+}
+
+.hero {
+  padding: 1.5rem;
+  background:
+    linear-gradient(160deg, rgba(255, 255, 255, 0.97), rgba(236, 253, 245, 0.9)),
+    var(--card);
+}
+
+.eyebrow {
+  margin: 0;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.8rem;
+}
+
+.heroTitle {
+  margin: 0.5rem 0;
+  line-height: 1.1;
+}
+
+.heroTitle span {
+  color: var(--accent-dark);
+}
