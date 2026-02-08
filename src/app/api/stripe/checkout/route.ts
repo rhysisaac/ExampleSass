@@ -2,10 +2,13 @@ import { NextResponse } from "next/server";
 import { track } from "@/lib/analytics";
 import { getCurrentUser } from "@/lib/auth";
 import { createCheckoutSession } from "@/lib/billing";
+import { getSubscriptionForUser } from "@/lib/db";
 
 export const runtime = "nodejs";
 export const preferredRegion = "lhr1";
 export const maxDuration = 10;
+
+const BLOCKED_CHECKOUT_STATUSES = new Set(["active", "trialing", "past_due", "unpaid", "paused"]);
 
 export async function POST(request: Request) {
   try {
@@ -14,6 +17,13 @@ export async function POST(request: Request) {
       const signInUrl = new URL("/sign-in", request.url);
       signInUrl.searchParams.set("redirect_url", "/pricing");
       return NextResponse.redirect(signInUrl, 303);
+    }
+
+    const subscription = await getSubscriptionForUser(user.id);
+    if (subscription && BLOCKED_CHECKOUT_STATUSES.has(subscription.status.toLowerCase())) {
+      const dashboardUrl = new URL("/dashboard", request.url);
+      dashboardUrl.searchParams.set("billing", "already-subscribed");
+      return NextResponse.redirect(dashboardUrl, 303);
     }
 
     const formData = await request.formData();
