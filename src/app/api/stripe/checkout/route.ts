@@ -4,6 +4,8 @@ import { getCurrentUser } from "@/lib/auth";
 import { createCheckoutSession } from "@/lib/billing";
 
 export const runtime = "nodejs";
+export const preferredRegion = "lhr1";
+export const maxDuration = 10;
 
 export async function POST(request: Request) {
   try {
@@ -24,7 +26,9 @@ export async function POST(request: Request) {
       email: user.email
     });
 
-    await track("checkout_started", { planId }, user.id);
+    void track("checkout_started", { planId }, user.id).catch((error) => {
+      console.error("[stripe.checkout] analytics failed", error);
+    });
 
     return NextResponse.redirect(checkoutUrl, 303);
   } catch (error) {

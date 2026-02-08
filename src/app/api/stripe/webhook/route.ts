@@ -9,6 +9,8 @@ import {
 } from "@/lib/db";
 
 export const runtime = "nodejs";
+export const preferredRegion = "lhr1";
+export const maxDuration = 20;
 
 function resolveCustomerId(
   customer: string | Stripe.Customer | Stripe.DeletedCustomer | null

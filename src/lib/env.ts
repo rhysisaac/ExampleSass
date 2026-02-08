@@ -25,12 +25,37 @@ export type AppEnv = z.infer<typeof envSchema>;
 
 let cachedEnv: AppEnv | null = null;
 
+function normalizeAppUrl(url: string) {
+  return url.replace(/\/+$/, "");
+}
+
+function resolveAppUrl(input: NodeJS.ProcessEnv) {
+  const explicitUrl = input.NEXT_PUBLIC_APP_URL?.trim();
+  if (explicitUrl) {
+    return normalizeAppUrl(explicitUrl);
+  }
+
+  const vercelHost = input.VERCEL_PROJECT_PRODUCTION_URL?.trim() ?? input.VERCEL_URL?.trim();
+  if (!vercelHost) {
+    return explicitUrl;
+  }
+
+  const withProtocol = vercelHost.startsWith("http://") || vercelHost.startsWith("https://")
+    ? vercelHost
+    : `https://${vercelHost}`;
+
+  return normalizeAppUrl(withProtocol);
+}
+
 export function readEnv() {
   if (cachedEnv) {
     return cachedEnv;
   }
 
-  const parsed = envSchema.safeParse(process.env);
+  const parsed = envSchema.safeParse({
+    ...process.env,
+    NEXT_PUBLIC_APP_URL: resolveAppUrl(process.env)
+  });
   if (!parsed.success) {
     throw new Error(`Invalid environment variables: ${parsed.error.message}`);
   }
