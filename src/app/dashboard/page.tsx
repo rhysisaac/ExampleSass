@@ -28,11 +28,14 @@ export default async function DashboardPage() {
         )}
       </div>
       <div className="card">
-        <h2>Setup checklist</h2>
+        <h2>Validation checklist</h2>
         <ol>
-          <li>Create users/subscriptions tables with <code>sql/schema.sql</code>.</li>
-          <li>Point Stripe webhook to <code>/api/stripe/webhook</code>.</li>
-          <li>Track first conversion event in PostHog.</li>
+          <li>
+            ✅ Billing flow live: <code>/pricing</code> -&gt; Stripe Checkout -&gt; webhook sync -&gt; active
+            subscription
+          </li>
+          <li>Collect first 3 paid pilot users and document objections.</li>
+          <li>Track checkout-started vs paid conversion in PostHog.</li>
         </ol>
       </div>
     </main>
