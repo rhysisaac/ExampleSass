@@ -1,13 +1,13 @@
 import { neon } from "@neondatabase/serverless";
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, sql as drizzleSql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/neon-http";
 import { subscriptions, users } from "@/db/schema";
 import { readEnv } from "@/lib/env";
 
 const env = readEnv();
-const sql = neon(env.DATABASE_URL);
+const neonSql = neon(env.DATABASE_URL);
 
-export const db = drizzle(sql, { schema: { users, subscriptions } });
+export const db = drizzle(neonSql, { schema: { users, subscriptions } });
 
 export async function upsertUser(input: { clerkUserId: string; email: string }) {
   const [user] = await db
@@ -68,7 +68,11 @@ export async function upsertSubscription(input: {
       set: {
         clerkUserId: input.clerkUserId,
         stripeCustomerId: input.stripeCustomerId,
-        status: input.status,
+        // Prevent stale webhook ordering from downgrading a known-good status to "incomplete".
+        status: drizzleSql`case
+          when ${subscriptions.status} <> 'incomplete' and excluded.status = 'incomplete' then ${subscriptions.status}
+          else excluded.status
+        end`,
         priceId: input.priceId,
         currentPeriodEnd: input.currentPeriodEnd,
         cancelAtPeriodEnd: input.cancelAtPeriodEnd,
