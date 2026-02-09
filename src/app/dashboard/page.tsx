@@ -7,36 +7,35 @@ export default async function DashboardPage() {
   const subscription = user ? await getSubscriptionForUser(user.id) : null;
 
   return (
-    <main>
-      <h1>Dashboard</h1>
+    <main className="dashboard">
+      <h1>Your workspace</h1>
       {!user ? (
-        <p>
+        <p className="dashboardLead">
           You are not signed in. <Link href="/sign-in">Sign in with Clerk</Link> to continue.
         </p>
       ) : (
-        <p>Welcome back, {user.email}.</p>
+        <p className="dashboardLead">Welcome back, {user.email}.</p>
       )}
 
-      <div className="card">
-        <h2>Subscription</h2>
-        {subscription ? (
-          <p>
-            Status: <strong>{subscription.status}</strong>
-          </p>
-        ) : (
-          <p>No active subscription found yet.</p>
-        )}
-      </div>
-      <div className="card">
-        <h2>Validation checklist</h2>
-        <ol>
-          <li>
-            ✅ Billing flow live: <code>/pricing</code> -&gt; Stripe Checkout -&gt; webhook sync -&gt; active
-            subscription
-          </li>
-          <li>Collect first 3 paid pilot users and document objections.</li>
-          <li>Track checkout-started vs paid conversion in PostHog.</li>
-        </ol>
+      <div className="dashCards">
+        <div className="card">
+          <h2>Subscription</h2>
+          {subscription ? (
+            <p>
+              Status: <strong className="badge">{subscription.status}</strong>
+            </p>
+          ) : (
+            <p>No active subscription found yet.</p>
+          )}
+        </div>
+        <div className="card">
+          <h2>Getting started</h2>
+          <ol>
+            <li>Create users/subscriptions tables with <code>sql/schema.sql</code>.</li>
+            <li>Point Stripe webhook to <code>/api/stripe/webhook</code>.</li>
+            <li>Run your first end-to-end checkout in test mode.</li>
+          </ol>
+        </div>
       </div>
     </main>
   );

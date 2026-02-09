@@ -7,15 +7,14 @@ Opinionated SaaS starter.
 - Auth: `clerk`
 - Billing: `stripe`
 - Data: `neon` + `drizzle`
-- Email: `resend`
-- Analytics: `posthog`
 
 ## What is wired
 
 - `src/lib/auth.ts`: reads active Clerk session and syncs user into Postgres.
+- `src/middleware.ts`: enables Clerk auth context across app and API routes.
+- `src/app/sign-in/[[...sign-in]]/page.tsx` + `src/app/sign-up/[[...sign-up]]/page.tsx`: Clerk auth screens.
 - `src/lib/billing.ts`: creates Stripe Checkout session + verifies webhook signatures.
 - `src/lib/db.ts`: Neon + Drizzle client with user/subscription upserts.
-- `src/lib/analytics.ts`: sends server-side conversion events to PostHog.
 - `src/app/api/stripe/checkout/route.ts`: starts Stripe checkout flow.
 - `src/app/api/stripe/webhook/route.ts`: syncs Stripe subscription lifecycle into Postgres.
 - `src/db/schema.ts` and `sql/schema.sql`: minimal relational schema.
@@ -45,7 +44,6 @@ pnpm dev
    - `customer.subscription.created`
    - `customer.subscription.updated`
    - `customer.subscription.deleted`
-5. Create a PostHog project and set `NEXT_PUBLIC_POSTHOG_KEY`.
 
 ## Recommended provider stack
 

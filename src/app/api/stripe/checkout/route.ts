@@ -1,27 +1,49 @@
 import { NextResponse } from "next/server";
-import { track } from "@/lib/analytics";
 import { getCurrentUser } from "@/lib/auth";
 import { createCheckoutSession } from "@/lib/billing";
 import { getSubscriptionForUser } from "@/lib/db";
+import { readEnv } from "@/lib/env";
 
 export const runtime = "nodejs";
-export const preferredRegion = "lhr1";
-export const maxDuration = 10;
 
 const BLOCKED_CHECKOUT_STATUSES = new Set(["active", "trialing", "past_due", "unpaid", "paused"]);
+const env = readEnv();
+
+function hasTrustedOrigin(request: Request) {
+  const appOrigin = new URL(env.NEXT_PUBLIC_APP_URL).origin;
+  const origin = request.headers.get("origin");
+  if (origin) {
+    return origin === appOrigin;
+  }
+
+  const referer = request.headers.get("referer");
+  if (!referer) {
+    return request.headers.get("sec-fetch-site") === "same-origin";
+  }
+
+  try {
+    return new URL(referer).origin === appOrigin;
+  } catch {
+    return false;
+  }
+}
 
 export async function POST(request: Request) {
   try {
+    if (!hasTrustedOrigin(request)) {
+      return NextResponse.json({ error: "Invalid request origin" }, { status: 403 });
+    }
+
     const user = await getCurrentUser();
     if (!user) {
-      const signInUrl = new URL("/sign-in", request.url);
+      const signInUrl = new URL("/sign-in", env.NEXT_PUBLIC_APP_URL);
       signInUrl.searchParams.set("redirect_url", "/pricing");
       return NextResponse.redirect(signInUrl, 303);
     }
 
     const subscription = await getSubscriptionForUser(user.id);
     if (subscription && BLOCKED_CHECKOUT_STATUSES.has(subscription.status.toLowerCase())) {
-      const dashboardUrl = new URL("/dashboard", request.url);
+      const dashboardUrl = new URL("/dashboard", env.NEXT_PUBLIC_APP_URL);
       dashboardUrl.searchParams.set("billing", "already-subscribed");
       return NextResponse.redirect(dashboardUrl, 303);
     }
@@ -34,10 +56,6 @@ export async function POST(request: Request) {
       planId,
       userId: user.id,
       email: user.email
-    });
-
-    void track("checkout_started", { planId }, user.id).catch((error) => {
-      console.error("[stripe.checkout] analytics failed", error);
     });
 
     return NextResponse.redirect(checkoutUrl, 303);

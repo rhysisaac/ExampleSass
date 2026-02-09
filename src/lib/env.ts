@@ -13,12 +13,7 @@ const envSchema = z.object({
   BILLING_PROVIDER: z.literal("stripe"),
   STRIPE_SECRET_KEY: z.string().min(1),
   STRIPE_WEBHOOK_SECRET: z.string().min(1),
-  STRIPE_PRICE_ID: z.string().min(1),
-  EMAIL_PROVIDER: z.literal("resend"),
-  RESEND_API_KEY: z.string().min(1),
-  ANALYTICS_PROVIDER: z.literal("posthog"),
-  NEXT_PUBLIC_POSTHOG_KEY: z.string().min(1),
-  NEXT_PUBLIC_POSTHOG_HOST: z.string().url()
+  STRIPE_PRICE_ID: z.string().min(1)
 });
 
 export type AppEnv = z.infer<typeof envSchema>;
@@ -40,9 +35,10 @@ function resolveAppUrl(input: NodeJS.ProcessEnv) {
     return explicitUrl;
   }
 
-  const withProtocol = vercelHost.startsWith("http://") || vercelHost.startsWith("https://")
-    ? vercelHost
-    : `https://${vercelHost}`;
+  const withProtocol =
+    vercelHost.startsWith("http://") || vercelHost.startsWith("https://")
+      ? vercelHost
+      : `https://${vercelHost}`;
 
   return normalizeAppUrl(withProtocol);
 }

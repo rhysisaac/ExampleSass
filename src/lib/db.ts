@@ -5,9 +5,9 @@ import { subscriptions, users } from "@/db/schema";
 import { readEnv } from "@/lib/env";
 
 const env = readEnv();
-const neonSql = neon(env.DATABASE_URL);
+const sql = neon(env.DATABASE_URL);
 
-export const db = drizzle(neonSql, { schema: { users, subscriptions } });
+export const db = drizzle(sql, { schema: { users, subscriptions } });
 
 export async function upsertUser(input: { clerkUserId: string; email: string }) {
   const [user] = await db
@@ -49,9 +49,16 @@ export async function upsertSubscription(input: {
   stripeCustomerId: string;
   status: string;
   priceId: string;
+  stripeEventId: string;
+  stripeEventCreatedAt: Date;
   currentPeriodEnd: Date | null;
   cancelAtPeriodEnd: boolean;
 }) {
+  const isRecentEvent = drizzleSql`(
+    ${subscriptions.lastStripeEventCreatedAt} is null
+    or excluded.last_stripe_event_created_at >= ${subscriptions.lastStripeEventCreatedAt}
+  )`;
+
   const [subscription] = await db
     .insert(subscriptions)
     .values({
@@ -60,6 +67,8 @@ export async function upsertSubscription(input: {
       stripeCustomerId: input.stripeCustomerId,
       status: input.status,
       priceId: input.priceId,
+      lastStripeEventId: input.stripeEventId,
+      lastStripeEventCreatedAt: input.stripeEventCreatedAt,
       currentPeriodEnd: input.currentPeriodEnd,
       cancelAtPeriodEnd: input.cancelAtPeriodEnd
     })
@@ -68,14 +77,29 @@ export async function upsertSubscription(input: {
       set: {
         clerkUserId: input.clerkUserId,
         stripeCustomerId: input.stripeCustomerId,
-        // Prevent stale webhook ordering from downgrading a known-good status to "incomplete".
+        // Reject stale updates so older webhooks cannot roll subscription state back.
         status: drizzleSql`case
+          when not ${isRecentEvent} then ${subscriptions.status}
           when ${subscriptions.status} <> 'incomplete' and excluded.status = 'incomplete' then ${subscriptions.status}
           else excluded.status
         end`,
-        priceId: input.priceId,
-        currentPeriodEnd: input.currentPeriodEnd,
-        cancelAtPeriodEnd: input.cancelAtPeriodEnd,
+        priceId: drizzleSql`case when ${isRecentEvent} then excluded.price_id else ${subscriptions.priceId} end`,
+        lastStripeEventId: drizzleSql`case
+          when ${isRecentEvent} then excluded.last_stripe_event_id
+          else ${subscriptions.lastStripeEventId}
+        end`,
+        lastStripeEventCreatedAt: drizzleSql`case
+          when ${isRecentEvent} then excluded.last_stripe_event_created_at
+          else ${subscriptions.lastStripeEventCreatedAt}
+        end`,
+        currentPeriodEnd: drizzleSql`case
+          when ${isRecentEvent} then excluded.current_period_end
+          else ${subscriptions.currentPeriodEnd}
+        end`,
+        cancelAtPeriodEnd: drizzleSql`case
+          when ${isRecentEvent} then excluded.cancel_at_period_end
+          else ${subscriptions.cancelAtPeriodEnd}
+        end`,
         updatedAt: new Date()
       }
     })

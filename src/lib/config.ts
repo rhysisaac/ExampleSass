@@ -6,14 +6,12 @@ export const appConfig = {
     auth: "clerk",
     billing: "stripe",
     data: "neon",
-    orm: "drizzle",
-    email: "resend",
-    analytics: "posthog"
+    orm: "drizzle"
   },
   valueProps: [
     {
       title: "Production-ready seams",
-      description: "Auth, billing, data, and analytics adapters are pre-defined."
+      description: "Auth, billing, and data adapters are pre-defined."
     },
     {
       title: "Opinionated defaults",

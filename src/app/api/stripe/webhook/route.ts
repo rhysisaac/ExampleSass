@@ -9,8 +9,6 @@ import {
 } from "@/lib/db";
 
 export const runtime = "nodejs";
-export const preferredRegion = "lhr1";
-export const maxDuration = 20;
 
 function resolveCustomerId(
   customer: string | Stripe.Customer | Stripe.DeletedCustomer | null
@@ -46,7 +44,10 @@ async function syncCheckoutSession(session: Stripe.Checkout.Session) {
   });
 }
 
-async function syncSubscription(subscription: Stripe.Subscription) {
+async function syncSubscription(
+  subscription: Stripe.Subscription,
+  stripeEvent: { id: string; createdAt: Date }
+) {
   const customerId = resolveCustomerId(subscription.customer);
   if (!customerId) {
     return;
@@ -74,6 +75,8 @@ async function syncSubscription(subscription: Stripe.Subscription) {
     stripeCustomerId: customerId,
     status: subscription.status,
     priceId: subscription.items.data[0]?.price?.id ?? "unknown",
+    stripeEventId: stripeEvent.id,
+    stripeEventCreatedAt: stripeEvent.createdAt,
     currentPeriodEnd: toDate(subscription.current_period_end),
     cancelAtPeriodEnd: subscription.cancel_at_period_end
   });
@@ -105,7 +108,10 @@ export async function POST(request: Request) {
       case "customer.subscription.created":
       case "customer.subscription.updated":
       case "customer.subscription.deleted":
-        await syncSubscription(event.data.object as Stripe.Subscription);
+        await syncSubscription(event.data.object as Stripe.Subscription, {
+          id: event.id,
+          createdAt: new Date(event.created * 1000)
+        });
         break;
       default:
         break;

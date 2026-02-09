@@ -21,25 +21,35 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <ClerkProvider>
           <header className="topbar">
-            <Link href="/" className="brand">
-              exampleSass
-            </Link>
-            <div className="authControls">
-              <SignedOut>
-                <SignInButton mode="redirect">
-                  <button className="ghostButton" type="button">
-                    Sign in
-                  </button>
-                </SignInButton>
-                <SignUpButton mode="redirect">
-                  <button className="ghostButton" type="button">
-                    Sign up
-                  </button>
-                </SignUpButton>
-              </SignedOut>
-              <SignedIn>
-                <UserButton afterSignOutUrl="/" />
-              </SignedIn>
+            <div className="topbarInner">
+              <Link href="/" className="brand">
+                exampleSass
+              </Link>
+              <nav className="topLinks" aria-label="Primary">
+                <Link href="/pricing" className="navLink">
+                  Pricing
+                </Link>
+                <Link href="/dashboard" className="navLink">
+                  Dashboard
+                </Link>
+              </nav>
+              <div className="authControls">
+                <SignedOut>
+                  <SignInButton mode="redirect">
+                    <button className="ghostButton" type="button">
+                      Sign in
+                    </button>
+                  </SignInButton>
+                  <SignUpButton mode="redirect">
+                    <button className="solidButton" type="button">
+                      Get started
+                    </button>
+                  </SignUpButton>
+                </SignedOut>
+                <SignedIn>
+                  <UserButton afterSignOutUrl="/" />
+                </SignedIn>
+              </div>
             </div>
           </header>
           {children}

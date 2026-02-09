@@ -16,6 +16,8 @@ export const subscriptions = pgTable("subscriptions", {
   stripeCustomerId: text("stripe_customer_id").notNull(),
   status: text("status").notNull(),
   priceId: text("price_id").notNull(),
+  lastStripeEventId: text("last_stripe_event_id"),
+  lastStripeEventCreatedAt: timestamp("last_stripe_event_created_at", { withTimezone: true }),
   currentPeriodEnd: timestamp("current_period_end", { withTimezone: true }),
   cancelAtPeriodEnd: boolean("cancel_at_period_end").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
